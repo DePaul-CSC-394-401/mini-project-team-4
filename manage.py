@@ -3,7 +3,7 @@
 import os
 import sys
 
-#foidjfsdo
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'todo_site.settings')

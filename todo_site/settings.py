@@ -117,6 +117,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+LOGIN_REDIRECT_URL = 'todo'  # Replace 'todo' with the URL name you want users redirected to after login
+LOGOUT_REDIRECT_URL = 'login' 
+
 STATIC_URL = 'static/'
 
 # Default primary key field type

@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse_lazy
 from .forms import TodoForm
+from django.db.models import Q
+from .models import Todo
 
 from django.contrib.auth.views import LoginView
 
@@ -78,3 +80,33 @@ def mark_complete(request, item_id):
     item.completed = True
     item.save()
     return redirect('todo')
+
+
+@login_required
+def index(request):
+    # Get the search query from the request
+    query = request.GET.get('q', None)
+
+    # Filter todos by the logged-in user and search query if present
+    item_list = Todo.objects.filter(user=request.user).order_by("-date")
+
+    if query:
+        # If a search query exists, filter the items by title or description (details)
+        item_list = item_list.filter(Q(title__icontains=query) | Q(details__icontains=query))
+
+    if request.method == "POST":
+        form = TodoForm(request.POST)
+        if form.is_valid():
+            todo_item = form.save(commit=False)
+            todo_item.user = request.user
+            todo_item.save()
+            return redirect('todo')
+    else:
+        form = TodoForm()
+
+    page = {
+        "forms": form,
+        "list": item_list,
+        "title": "TODO LIST",
+    }
+    return render(request, 'todo/index.html', page)

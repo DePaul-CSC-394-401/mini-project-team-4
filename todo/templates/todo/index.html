@@ -6,9 +6,8 @@
   <meta charset="utf-8">
   <title>{{title}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% load static %}
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <!--style-->
   <style>
   .card {
@@ -36,11 +35,17 @@
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.4),
                 0 6px 20px 0 rgba(0,0,0,0.36);
   }
+
+  /* New CSS for completed items */
+  .completed {
+    background-color: lightgreen; /* Visually mark as completed */
+    text-decoration: line-through;
+  }
   </style>
 
 </head>
 
-<body  class="container-fluid">
+<body class="container-fluid">
 
   {% if messages %}
   {% for message in messages %}
@@ -60,34 +65,65 @@
     <div class="col-md-8">
 
       {% for i in list %}
-      <div class="card">
+      <!-- Updated card div with conditional 'completed' class -->
+      <div class="card {% if i.completed %}completed{% endif %}">
         <center><b>{{i.title}}</b></center>
+        <hr/>
+        <strong>Priority:</strong> {{ i.priority }}
         <hr/>
         {{i.date}}
         <hr/>
         {{i.details}}
         <br />
         <br />
-        <form action="/del/{{i.id}}" method="POST" style=" padding-right: 4%; padding-bottom: 3%;">
+        <!-- Edit Button -->
+        <form action="/edit/{{i.id}}" method="GET" style="float: left; padding-right: 10px;">
+          <button type="submit" class="btn btn-warning">
+            <span class="glyphicon glyphicon-pencil"></span> &nbsp; Edit
+          </button>
+        </form>
+
+        <!-- Remove Button -->
+        <form action="/del/{{i.id}}" method="POST" style="float: right;">
           {% csrf_token %}
-          <button value="remove" type="submit"  class="btn btn-primary" style="float: right;"><span class="glyphicon glyphicon-trash"></span> &nbsp; remove</button>
+          <button value="remove" type="submit" class="btn btn-primary">
+            <span class="glyphicon glyphicon-trash"></span> &nbsp; Remove
+          </button>
+        </form>
+
+        <!-- Mark as Complete Button or Completed Message -->
+        {% if not i.completed %}
+        <form action="/complete/{{i.id}}/" method="POST" style="float: right; margin-right: 10px;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success">
+            <span class="glyphicon glyphicon-ok"></span> &nbsp; Complete
+          </button>
+        </form>
+        
+        
+        {% else %}
+          <p style="color: green; float: right; margin-right: 10px;">Completed</p>
+        {% endif %}
+
+        <div style="clear: both;"></div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="col-md-1"> </div>
+    <div class="col-md-3">
+      <div class="submit_form">
+        <form method="POST">
+          {% csrf_token %}
+          {{ forms.as_p }}  
+          <center>
+            <input type="submit" class="btn btn-default" value="Submit" />
+          </center>
         </form>
       </div>
-      {% endfor%}
-    </div>
-    <div class="col-md-1"> </div>
-    <div class="col-md-3" >
-      <div  class="submit_form">
-      <form  method="POST">
-        {% csrf_token %}
-        {{forms}}
-        <center>
-        <input type="submit" class="btn btn-default" value="submit" />
-      </center>
-      </form>
+      
     </div>
   </div>
-</div>
 </body>
 
 </html>

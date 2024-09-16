@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body class="container-fluid">
+  <h1 class="text-center">{{ title }}</h1>
+  <hr>
+
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+      <form method="POST">
+        {% csrf_token %}
+        {{ forms.as_p }}  <!-- Renders all fields including 'priority' -->
+        <div class="form-group text-center">
+          <button type="submit" class="btn btn-success">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

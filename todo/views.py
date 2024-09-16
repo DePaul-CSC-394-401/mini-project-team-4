@@ -1,10 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.urls import reverse_lazy
 from .forms import TodoForm
+
+from django.contrib.auth.views import LoginView
+
 from .models import Todo
 
-###############################################
+class CustomLoginView(LoginView):
+    template_name = 'todo/login.html'
+    fields = '__all__'
+    redirect_authenticated_user = True
 
+    def get_success_url(self):
+        return reverse_lazy('todo')
 
 def index(request):
     item_list = Todo.objects.order_by("-date")

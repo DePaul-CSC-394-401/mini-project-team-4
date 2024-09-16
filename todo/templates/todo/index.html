@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 
+
 <head>
 
   <meta charset="utf-8">
@@ -47,6 +48,14 @@
 
 <body class="container-fluid">
 
+  <!-- Authentication check placed inside body -->
+  {% if request.user.is_authenticated %}
+  <p>{{request.user}}</p>
+  <a href="/logout/">Logout</a>  <!-- Provide correct logout URL -->
+  {% else %}
+  <a href="/login/">Login</a>   <!-- Provide correct login URL -->
+  {% endif %}
+
   {% if messages %}
   {% for message in messages %}
   <div class="alert alert-info">
@@ -54,6 +63,8 @@
   </div>
   {% endfor %}
   {% endif %}
+
+
 
   <center class="row">
     <h1><i>__TODO LIST__</i></h1>

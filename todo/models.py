@@ -1,8 +1,9 @@
 from django.db import models
 from django.utils import timezone
-
+from django.contrib.auth.models import User
 
 class Todo(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
 
     PRIORITY_CHOICES = [('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High'),]
 
@@ -14,3 +15,4 @@ class Todo(models.Model):
 
     def __str__(self):
         return self.title
+    

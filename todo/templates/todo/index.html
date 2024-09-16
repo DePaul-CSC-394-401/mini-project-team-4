@@ -73,57 +73,77 @@
     <hr />
   </center>
 
-  <div class="row">
 
-    <div class="col-md-8">
-
-      {% for i in list %}
-      <!-- Updated card div with conditional 'completed' class -->
-      <div class="card {% if i.completed %}completed{% endif %}">
-        <center><b>{{i.title}}</b></center>
-        <hr/>
-        <strong>Priority:</strong> {{ i.priority }}
-        <hr/>
-        {{i.date}}
-        <hr/>
-        {{i.details}}
-        <br />
-        <br />
-        <!-- Edit Button -->
-        <form action="/edit/{{i.id}}" method="GET" style="float: left; padding-right: 10px;">
-          <button type="submit" class="btn btn-warning">
-            <span class="glyphicon glyphicon-pencil"></span> &nbsp; Edit
-          </button>
-        </form>
-
-        <!-- Remove Button -->
-        <form action="/del/{{i.id}}" method="POST" style="float: right;">
-          {% csrf_token %}
-          <button value="remove" type="submit" class="btn btn-primary">
-            <span class="glyphicon glyphicon-trash"></span> &nbsp; Remove
-          </button>
-        </form>
-
-        <!-- Mark as Complete Button or Completed Message -->
-        {% if not i.completed %}
-        <form action="/complete/{{i.id}}/" method="POST" style="float: right; margin-right: 10px;">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-success">
-            <span class="glyphicon glyphicon-ok"></span> &nbsp; Complete
-          </button>
-        </form>
-        
-        
-        {% else %}
-          <p style="color: green; float: right; margin-right: 10px;">Completed</p>
-        {% endif %}
-
-        <div style="clear: both;"></div>
+ <!-- Search Bar and Show All Button -->
+ <div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <form method="GET" action="{% url 'todo' %}" class="form-inline text-center">
+      <div class="form-group">
+        <input type="text" name="q" class="form-control" placeholder="Search by title or description..." value="{{ request.GET.q }}">
+        <button type="submit" class="btn btn-primary">Search</button>
       </div>
-      {% endfor %}
+      
+      <!-- "Show All" Button to clear the search -->
+      <a href="{% url 'todo' %}" class="btn btn-default">Show All</a>
+    </form>
+    <hr>
+  </div>
+</div>
+
+  <div class="row">
+    <div class="col-md-8">
+      <!-- Display tasks or a message if none are found -->
+      {% if list %}
+        {% for i in list %}
+          <!-- Updated card div with conditional 'completed' class -->
+          <div class="card {% if i.completed %}completed{% endif %}">
+            <center><b>{{ i.title }}</b></center>
+            <hr/>
+            <strong>Priority:</strong> {{ i.priority }}
+            <hr/>
+            {{ i.date }}
+            <hr/>
+            {{ i.details }}
+            <br />
+            <br />
+
+            <!-- Edit Button -->
+            <form action="/edit/{{ i.id }}" method="GET" style="float: left; padding-right: 10px;">
+              <button type="submit" class="btn btn-warning">
+                <span class="glyphicon glyphicon-pencil"></span> &nbsp; Edit
+              </button>
+            </form>
+
+            <!-- Remove Button -->
+            <form action="/del/{{ i.id }}" method="POST" style="float: right;">
+              {% csrf_token %}
+              <button value="remove" type="submit" class="btn btn-primary">
+                <span class="glyphicon glyphicon-trash"></span> &nbsp; Remove
+              </button>
+            </form>
+
+            <!-- Mark as Complete Button or Completed Message -->
+            {% if not i.completed %}
+              <form action="/complete/{{ i.id }}/" method="POST" style="float: right; margin-right: 10px;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">
+                  <span class="glyphicon glyphicon-ok"></span> &nbsp; Complete
+                </button>
+              </form>
+            {% else %}
+              <p style="color: green; float: right; margin-right: 10px;">Completed</p>
+            {% endif %}
+            
+            <div style="clear: both;"></div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No tasks found matching your search.</p>
+      {% endif %}
     </div>
 
     <div class="col-md-1"> </div>
+
     <div class="col-md-3">
       <div class="submit_form">
         <form method="POST">
@@ -134,9 +154,7 @@
           </center>
         </form>
       </div>
-      
     </div>
   </div>
 </body>
-
 </html>

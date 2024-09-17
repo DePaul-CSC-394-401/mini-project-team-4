@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   web:
     build: .
@@ -8,15 +10,27 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    environment:
+      - DATABASE_NAME=todo_db
+      - DATABASE_USER=todo_user
+      - DATABASE_PASSWORD=password
+      - DATABASE_HOST=db
+    networks:
+      - webnet
 
   db:
-      image: postgres:13
-      environment:
-        POSTGRES_DB: todo_db
-        POSTGRES_USER: todo_user
-        POSTGRES_PASSWORD: password
-      volumes:
-        - postgres_data:/var/lib/postgresql/data
+    image: postgres:13
+    environment:
+      POSTGRES_DB: todo_db
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - webnet
 
 volumes:
   postgres_data:
+
+networks:
+  webnet:

@@ -4,6 +4,9 @@ FROM python:3.9-slim
 # Set the working directory inside the Docker container
 WORKDIR /app
 
+# Install necessary build tools
+RUN apt-get update && apt-get install -y gcc python3-dev
+
 # Copy the requirements file into the container
 COPY requirements.txt .
 

@@ -9,37 +9,40 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <!--style-->
   <style>
-  .card {
-   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.5),
-               0 6px 20px 0 rgba(0,0,0,0.39);
-   background: lightpink;
-   margin-bottom : 5%;
-   border-radius: 25px;
-   padding : 2%;
-   overflow: auto;
-   resize: both;
-   text-overflow: ellipsis;
-  }
-  .card:hover{
-    background: lightblue;
-  }
+    .card {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5),
+        0 6px 20px 0 rgba(0, 0, 0, 0.39);
+      background: lightpink;
+      margin-bottom: 5%;
+      border-radius: 25px;
+      padding: 2%;
+      overflow: auto;
+      resize: both;
+      text-overflow: ellipsis;
+    }
 
-  .submit_form{
-    text-align: center;
-    padding: 3%;
-    background: pink;
-    border-radius: 25px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.4),
-                0 6px 20px 0 rgba(0,0,0,0.36);
-  }
+    .card:hover {
+      background: lightblue;
+    }
 
-  /* New CSS for completed items */
-  .completed {
-    background-color: lightgreen; /* Visually mark as completed */
-    text-decoration: line-through;
-  }
+    .submit_form {
+      text-align: center;
+      padding: 3%;
+      background: pink;
+      border-radius: 25px;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.4),
+        0 6px 20px 0 rgba(0, 0, 0, 0.36);
+    }
+
+    /* New CSS for completed items */
+    .completed {
+      background-color: lightgreen;
+      /* Visually mark as completed */
+      text-decoration: line-through;
+    }
   </style>
 
+<<<<<<< HEAD
 </head><!DOCTYPE html>
 <html lang="en">
 
@@ -75,19 +78,23 @@
       margin-right: 20px;
     }
   </style>
+=======
+  <!-- Add Bootstrap JS and jQuery for the modal -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+>>>>>>> b81dd9b70b0df2d337ee2359ea362765084c46b4
 </head>
 
 <body class="container-fluid">
-
   <!-- Login Logout check placed inside body -->
   {% if request.user.is_authenticated %}
-    <p>{{request.user}}</p>
-    <form action="{% url 'logout' %}" method="POST" style="display: inline;">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-danger">Logout</button>
-    </form>
+  <p>{{request.user}}</p>
+  <form action="{% url 'logout' %}" method="POST" style="display: inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Logout</button>
+  </form>
   {% else %}
-    <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+  <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
   {% endif %}
 
   {% if messages %}
@@ -170,71 +177,109 @@
   </div>
 
 
- <!-- Search Bar and Show All Button -->
- <div class="row">
-  <div class="col-md-6 col-md-offset-3">
-    <form method="GET" action="{% url 'todo' %}" class="form-inline text-center">
-      <div class="form-group">
-        <input type="text" name="q" class="form-control" placeholder="Search by title or description..." value="{{ request.GET.q }}">
-        <button type="submit" class="btn btn-primary">Search</button>
-      </div>
-      
-      <!-- "Show All" Button to clear the search -->
-      <a href="{% url 'todo' %}" class="btn btn-default">Show All</a>
-    </form>
-    <hr>
+  <!-- Search Bar -->
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+      <form method="GET" action="{% url 'todo' %}" class="form-inline text-center">
+        <div class="form-group">
+          <input type="text" name="q" class="form-control" placeholder="Search by title or description..." value="{{ request.GET.q }}">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+        <!-- "Show All" Button to clear the search -->
+        <a href="{% url 'todo' %}" class="btn btn-default">Show All</a>
+      </form>
+    </div>
   </div>
-</div>
+
+  <!-- Sort Dropdown -->
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+      <form method="GET" action="{% url 'todo' %}" class="form-inline text-center" style="margin-top: 10px;">
+        <div class="form-group">
+          <select name="sort_by" class="form-control">
+            <option value="">Sort by...</option>
+            <option value="priority" {% if request.GET.sort_by == 'priority' %}selected{% endif %}>Highest to Lowest Priority</option>
+            <option value="date" {% if request.GET.sort_by == 'date' %}selected{% endif %}>Nearest to Farthest Due Date</option>
+          </select>
+          <button type="submit" class="btn btn-secondary">Sort</button>
+        </div>
+      </form>
+      <hr>
+    </div>
+  </div>
 
   <div class="row">
     <div class="col-md-8">
       <!-- Display tasks or a message if none are found -->
       {% if list %}
-        {% for i in list %}
-          <!-- Updated card div with conditional 'completed' class -->
-          <div class="card {% if i.completed %}completed{% endif %}">
-            <center><b>{{ i.title }}</b></center>
-            <hr/>
-            <strong>Priority:</strong> {{ i.priority }}
-            <hr/>
-            {{ i.date }}
-            <hr/>
-            {{ i.details }}
-            <br />
-            <br />
+      {% for i in list %}
+      <!-- Updated card div with conditional 'completed' class -->
+      <div class="card {% if i.completed %}completed{% endif %}">
+        <center><b>{{ i.title }}</b></center>
+        <hr />
+        <strong>Priority:</strong> {{ i.priority }}
+        <hr />
+        {{ i.date }}
+        <hr />
+        {{ i.details }}
+        <br />
+        <br />
 
-            <!-- Edit Button -->
-            <form action="/edit/{{ i.id }}" method="GET" style="float: left; padding-right: 10px;">
-              <button type="submit" class="btn btn-warning">
-                <span class="glyphicon glyphicon-pencil"></span> &nbsp; Edit
-              </button>
-            </form>
+        <!-- Edit Button -->
+        <form action="/edit/{{ i.id }}" method="GET" style="float: left; padding-right: 10px;">
+          <button type="submit" class="btn btn-warning">
+            <span class="glyphicon glyphicon-pencil"></span> &nbsp; Edit
+          </button>
+        </form>
 
-            <!-- Remove Button -->
-            <form action="/del/{{ i.id }}" method="POST" style="float: right;">
-              {% csrf_token %}
-              <button value="remove" type="submit" class="btn btn-primary">
-                <span class="glyphicon glyphicon-trash"></span> &nbsp; Remove
-              </button>
-            </form>
+        <!-- Remove Button -->
+        <button class="btn btn-primary" style="float: right;" data-toggle="modal" data-target="#deleteModal{{ i.id }}">
+          <span class="glyphicon glyphicon-trash"></span> &nbsp; Remove
+        </button>
 
-            <!-- Mark as Complete Button or Completed Message -->
-            {% if not i.completed %}
-              <form action="/complete/{{ i.id }}/" method="POST" style="float: right; margin-right: 10px;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-success">
-                  <span class="glyphicon glyphicon-ok"></span> &nbsp; Complete
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal{{ i.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
                 </button>
-              </form>
-            {% else %}
-              <p style="color: green; float: right; margin-right: 10px;">Completed</p>
-            {% endif %}
-            
-            <div style="clear: both;"></div>
+              </div>
+              <div class="modal-body">
+                Are you sure you want to delete this item?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <!-- Use a form with POST method for delete action -->
+                <form action="{% url 'del' item_id=i.id %}" method="POST" style="display: inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </div>
+            </div>
           </div>
-        {% endfor %}
+        </div>
+
+        <!-- Mark as Complete Button or Completed Message -->
+        {% if not i.completed %}
+        <form action="/complete/{{ i.id }}/" method="POST" style="float: right; margin-right: 10px;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success">
+            <span class="glyphicon glyphicon-ok"></span> &nbsp; Complete
+          </button>
+        </form>
+        {% else %}
+        <p style="color: green; float: right; margin-right: 10px;">Completed</p>
+        {% endif %}
+
+        <div style="clear: both;"></div>
+      </div>
+      {% endfor %}
       {% else %}
-        <p>No tasks found matching your search.</p>
+      <p>No tasks found matching your search.</p>
       {% endif %}
     </div>
 
@@ -244,7 +289,7 @@
       <div class="submit_form">
         <form method="POST">
           {% csrf_token %}
-          {{ forms.as_p }}  
+          {{ forms.as_p }}
           <center>
             <input type="submit" class="btn btn-default" value="Submit" />
           </center>
@@ -253,4 +298,5 @@
     </div>
   </div>
 </body>
+
 </html>

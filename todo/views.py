@@ -5,19 +5,26 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from .forms import TodoForm
 from django.db.models import Q
+<<<<<<< HEAD
 from django.contrib.auth.models import User
 from django.views.generic.edit import FormView
 from .models import Todo
 from django import forms
 
 
+=======
+from .models import Todo
+>>>>>>> b81dd9b70b0df2d337ee2359ea362765084c46b4
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
+<<<<<<< HEAD
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from .models import Todo
+=======
+>>>>>>> b81dd9b70b0df2d337ee2359ea362765084c46b4
 
 class CustomLoginView(LoginView):
     template_name = 'todo/login.html'
@@ -27,6 +34,7 @@ class CustomLoginView(LoginView):
     def get_success_url(self):
         return reverse_lazy('todo')
     
+<<<<<<< HEAD
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     class Meta:
@@ -40,6 +48,8 @@ class CustomUserCreationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+=======
+>>>>>>> b81dd9b70b0df2d337ee2359ea362765084c46b4
 class RegisterPage(FormView):
     template_name = 'todo/register.html'
     form_class = CustomUserCreationForm  # Use the custom form
@@ -52,7 +62,11 @@ class RegisterPage(FormView):
             login(self.request, user)
         return super(RegisterPage, self).form_valid(form)
     
+<<<<<<< HEAD
     def get(self,*args, **kwargs):
+=======
+    def get(self, *args, **kwargs):
+>>>>>>> b81dd9b70b0df2d337ee2359ea362765084c46b4
         if self.request.user.is_authenticated:
             return redirect('todo')
         return super(RegisterPage, self).get(*args, **kwargs)
@@ -61,17 +75,34 @@ class RegisterPage(FormView):
 
 @login_required
 def index(request):
+    # Get the search query and sort option from the request
+    query = request.GET.get('q', None)
+    sort_by = request.GET.get('sort_by', None)
+
     # Filter todos by the logged-in user
-    item_list = Todo.objects.filter(user=request.user).order_by("-date")
+    item_list = Todo.objects.filter(user=request.user)
+
+    if query:
+        # Filter items by title or description (details) if a search query exists
+        item_list = item_list.filter(Q(title__icontains=query) | Q(details__icontains=query))
+
+    # Apply sorting based on the selected option
+    if sort_by == 'priority':
+        # Sort by priority: highest ('High') to lowest ('Low')
+        priority_order = {'High': 1, 'Medium': 2, 'Low': 3}
+        item_list = sorted(item_list, key=lambda x: priority_order[x.priority])
+    elif sort_by == 'date':
+        # Sort by date: nearest to farthest due date
+        item_list = item_list.order_by('date')
+    else:
+        # Default sorting by creation date descending
+        item_list = item_list.order_by('-date')
 
     if request.method == "POST":
         form = TodoForm(request.POST)
         if form.is_valid():
-            # Don't save directly yet, but create an instance without committing to DB
             todo_item = form.save(commit=False)
-            # Assign the currently logged-in user to the todo item
             todo_item.user = request.user
-            # Now save the todo item to the database
             todo_item.save()
             return redirect('todo')
     else:
@@ -85,14 +116,17 @@ def index(request):
     return render(request, 'todo/index.html', page)
 
 
-
-### function to remove item, it receive todo item_id as primary key from url ##
 @login_required
 def remove(request, item_id):
     item = get_object_or_404(Todo, id=item_id, user=request.user)
-    item.delete()
-    messages.info(request, "item removed !!!")
-    return redirect('todo')
+
+    if request.method == "POST":
+        item.delete()
+        messages.info(request, "Item removed!")
+        return redirect('todo')
+    
+    return render(request, 'todo/confirm_delete.html', {'item': item})
+
 
 @login_required
 def edit(request, item_id):
@@ -119,6 +153,7 @@ def mark_complete(request, item_id):
     item.completed = True
     item.save()
     return redirect('todo')
+<<<<<<< HEAD
 
 
 @login_required
@@ -188,3 +223,5 @@ def change_password(request):
         else:
             messages.error(request, "Old password is incorrect.")
             return redirect('profile')
+=======
+>>>>>>> b81dd9b70b0df2d337ee2359ea362765084c46b4

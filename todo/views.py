@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.views.generic.edit import FormView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse_lazy
@@ -9,6 +10,7 @@ from .models import Todo
 
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
 
 from .models import Todo
@@ -18,6 +20,9 @@ class CustomLoginView(LoginView):
     fields = '__all__'
     redirect_authenticated_user = True
 
+    def get_success_url(self):
+        return reverse_lazy('todo')
+    
 class RegisterPage(FormView):
     template_name = 'todo/register.html'
     form_class = UserCreationForm
@@ -29,11 +34,13 @@ class RegisterPage(FormView):
         if user is not None:
             login(self.request, user)
         return super(RegisterPage, self).form_valid(form)
-
-    def get(self, *args, **kwargs):
+    
+    def get(self,*args, **kwargs):
         if self.request.user.is_authenticated:
             return redirect('todo')
         return super(RegisterPage, self).get(*args, **kwargs)
+
+    
 
 @login_required
 def index(request):

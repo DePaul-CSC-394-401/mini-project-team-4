@@ -10,11 +10,13 @@ from django.views.generic.edit import FormView
 from .models import Todo
 from django import forms
 
+
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
-
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from .models import Todo
 
 class CustomLoginView(LoginView):
@@ -147,3 +149,42 @@ def index(request):
         "title": "TODO LIST",
     }
     return render(request, 'todo/index.html', page)
+
+@login_required
+def update_email(request):
+    if request.method == 'POST':
+        new_email = request.POST.get('email')
+
+        # Check if the new email is different from the current email
+        if new_email != request.user.email:
+            user = request.user
+            user.email = new_email
+            user.save(update_fields=['email'])  # Only update the email field
+
+            messages.success(request, 'Email updated successfully!')
+        else:
+            messages.info(request, 'New email is the same as the current email.')
+
+        return redirect('todo')
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        new_password2 = request.POST.get('new_password2')
+
+        if new_password != new_password2:
+            messages.error(request, "New passwords do not match.")
+            return redirect('profile')  # Redirect back to profile
+
+        user = request.user
+        if user.check_password(old_password):
+            user.set_password(new_password)
+            user.save()
+            messages.success(request, "Password changed successfully!")
+            return redirect('login')  # Re-login after password change
+        else:
+            messages.error(request, "Old password is incorrect.")
+            return redirect('profile')

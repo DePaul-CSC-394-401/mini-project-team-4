@@ -66,9 +66,14 @@ def index(request):
 @login_required
 def remove(request, item_id):
     item = get_object_or_404(Todo, id=item_id, user=request.user)
-    item.delete()
-    messages.info(request, "item removed !!!")
-    return redirect('todo')
+
+    if request.method == "POST":
+        item.delete()
+        messages.info(request, "Item removed!")
+        return redirect('todo')
+    
+    return render(request, 'todo/confirm_delete.html', {'item': item})
+
 
 @login_required
 def edit(request, item_id):

@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 
-
 <head>
-
   <meta charset="utf-8">
   <title>{{title}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,7 +10,6 @@
   <!--style-->
   <style>
   .card {
-
    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.5),
                0 6px 20px 0 rgba(0,0,0,0.39);
    background: lightpink;
@@ -28,7 +25,6 @@
   }
 
   .submit_form{
-
     text-align: center;
     padding: 3%;
     background: pink;
@@ -50,10 +46,13 @@
 
   <!-- Login Logout check placed inside body -->
   {% if request.user.is_authenticated %}
-  <p>{{request.user}}</p>
-  <a href="{% url 'logout' %}">Logout</a>  
+    <p>{{request.user}}</p>
+    <form action="{% url 'logout' %}" method="POST" style="display: inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
   {% else %}
-  <a href="{ url 'login' %}">Login</a>   
+    <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
   {% endif %}
 
   {% if messages %}
@@ -64,15 +63,10 @@
   {% endfor %}
   {% endif %}
 
-
-
-
-
   <center class="row">
     <h1><i>__TODO LIST__</i></h1>
     <hr />
   </center>
-
 
  <!-- Search Bar and Show All Button -->
  <div class="row">

@@ -13,6 +13,10 @@ from django.contrib.auth import login
 from django import forms
 from django.contrib.auth.models import User
 
+from django.core.mail import send_mail
+from django.conf import settings  # for accessing email config
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 
 class CustomLoginView(LoginView):
@@ -41,7 +45,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 class RegisterPage(FormView):
     template_name = 'todo/register.html'
-    form_class = CustomUserCreationForm  # type: ignore # Use the custom form
+    form_class = CustomUserCreationForm  
     redirect_authenticated_user = True
     success_url = reverse_lazy('todo')
 
@@ -49,14 +53,13 @@ class RegisterPage(FormView):
         user = form.save()
         if user is not None:
             login(self.request, user)
-        return super(RegisterPage, self).form_valid(form)
-    
-    def get(self, *args, **kwargs):
-        if self.request.user.is_authenticated:
-            return redirect('todo')
-        return super(RegisterPage, self).get(*args, **kwargs)
+            subject = 'Registration Successful - Email Confirmation'
+            html_message = render_to_string('todo/email_confirmation.html', {'user': user})
+            plain_message = strip_tags(html_message)  
+            send_mail(subject, plain_message, settings.EMAIL_HOST_USER, [user.email], html_message=html_message)
 
-    
+        return super(RegisterPage, self).form_valid(form)
+
 
 @login_required
 def index(request):

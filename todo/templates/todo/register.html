@@ -1,8 +1,25 @@
 <h1>Register</h1>
-<form  method="POST">
+<form method="POST">
     {% csrf_token %}
-    {{form.as_p}}
+    {{ form.non_field_errors }}  <!-- For displaying any non-field errors -->
+
+    <!-- Display the email field explicitly -->
+    <p>
+        {{ form.email.label_tag }}<br>
+        {{ form.email }}
+    </p>
+
+    <!-- Display the password fields -->
+    <p>
+        {{ form.password1.label_tag }}<br>
+        {{ form.password1 }}
+    </p>
+    <p>
+        {{ form.password2.label_tag }}<br>
+        {{ form.password2 }}
+    </p>
+
     <input type="submit" value="Register">
 </form>
 
-<p>Already have an account? <a href="">Login</a></p>
+<p>Already have an account? <a href="{% url 'login' %}">Login</a></p>

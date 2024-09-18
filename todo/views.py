@@ -8,7 +8,16 @@ from django.db.models import Q
 from .models import Todo
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
+from django import forms
+from django.contrib.auth.models import User
+
+from django.core.mail import send_mail
+from django.conf import settings  # for accessing email config
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
 
 class CustomLoginView(LoginView):
     template_name = 'todo/login.html'
@@ -17,10 +26,26 @@ class CustomLoginView(LoginView):
 
     def get_success_url(self):
         return reverse_lazy('todo')
+
+
+class CustomUserCreationForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    class Meta:
+        model = User
+        fields = ['email', 'password1', 'password2']
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        user.username = self.cleaned_data['email']  # Set the username to the email
+        if commit:
+            user.save()
+        return user
     
+
 class RegisterPage(FormView):
     template_name = 'todo/register.html'
-    form_class = UserCreationForm
+    form_class = CustomUserCreationForm  
     redirect_authenticated_user = True
     success_url = reverse_lazy('todo')
 
@@ -28,12 +53,13 @@ class RegisterPage(FormView):
         user = form.save()
         if user is not None:
             login(self.request, user)
+            subject = 'Registration Successful - Email Confirmation'
+            html_message = render_to_string('todo/email_confirmation.html', {'user': user})
+            plain_message = strip_tags(html_message)  
+            send_mail(subject, plain_message, settings.EMAIL_HOST_USER, [user.email], html_message=html_message)
+
         return super(RegisterPage, self).form_valid(form)
-    
-    def get(self, *args, **kwargs):
-        if self.request.user.is_authenticated:
-            return redirect('todo')
-        return super(RegisterPage, self).get(*args, **kwargs)
+
 
 @login_required
 def index(request):
@@ -115,3 +141,48 @@ def mark_complete(request, item_id):
     item.completed = True
     item.save()
     return redirect('todo')
+
+
+@login_required
+def update_email(request):
+    if request.method == 'POST':
+        new_email = request.POST.get('email')
+
+        # Check if the new email is different from the current email
+        if new_email != request.user.email:
+            user = request.user
+            # Update both email and username fields
+            user.email = new_email
+            user.username = new_email  # Assuming you are using email as the username
+            user.save(update_fields=['email', 'username'])  # Update both fields
+
+            # Log the user in again to refresh the session with the new email/username
+            login(request, user)
+
+            messages.success(request, 'Email updated successfully!')
+        else:
+            messages.info(request, 'New email is the same as the current email.')
+
+        return redirect('todo')
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        new_password2 = request.POST.get('new_password2')
+
+        if new_password != new_password2:
+            messages.error(request, "New passwords do not match.")
+            return redirect('profile')  # Redirect back to profile
+
+        user = request.user
+        if user.check_password(old_password):
+            user.set_password(new_password)
+            user.save()
+            messages.success(request, "Password changed successfully!")
+            return redirect('login')  # Re-login after password change
+        else:
+            messages.error(request, "Old password is incorrect.")
+            return redirect('profile')

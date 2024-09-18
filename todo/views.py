@@ -148,8 +148,13 @@ def update_email(request):
         # Check if the new email is different from the current email
         if new_email != request.user.email:
             user = request.user
+            # Update both email and username fields
             user.email = new_email
-            user.save(update_fields=['email'])  # Only update the email field
+            user.username = new_email  # Assuming you are using email as the username
+            user.save(update_fields=['email', 'username'])  # Update both fields
+
+            # Log the user in again to refresh the session with the new email/username
+            login(request, user)
 
             messages.success(request, 'Email updated successfully!')
         else:

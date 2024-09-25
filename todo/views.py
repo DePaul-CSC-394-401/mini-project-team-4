@@ -3,7 +3,7 @@ from django.views.generic.edit import FormView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse_lazy
-from .forms import TodoForm
+from .forms import TeamForm, TodoForm
 from django.db.models import Q
 from .models import Todo
 from django.contrib.auth.views import LoginView
@@ -186,3 +186,14 @@ def change_password(request):
         else:
             messages.error(request, "Old password is incorrect.")
             return redirect('profile')
+
+@login_required
+def create_team(request):
+    if request.method == 'POST':
+        form = TeamForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('team_list')
+    else: # if get request then give back empty form (ie page is loaded for first time)
+        form = TeamForm()
+    return render(request, 'todo/team.html', {'form': form})

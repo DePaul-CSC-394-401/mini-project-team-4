@@ -17,6 +17,7 @@ from django.core.mail import send_mail
 from django.conf import settings  # for accessing email config
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.contrib.auth.models import User
 
 
 class CustomLoginView(LoginView):
@@ -96,10 +97,14 @@ def index(request):
     else:
         form = TodoForm()
 
+    # get all the users for the create team modal (excluding the current user)
+    users = User.objects.exclude(id=request.user.id) 
+
     page = {
         "forms": form,
         "list": item_list,
         "title": "TODO LIST",
+        "users": users,
     }
     return render(request, 'todo/index.html', page)
 
@@ -189,11 +194,15 @@ def change_password(request):
 
 @login_required
 def create_team(request):
+    users = User.objects.all()
+    print(users)
     if request.method == 'POST':
         form = TeamForm(request.POST)
         if form.is_valid():
-            form.save()
+            team = form.save(commit=False)
+            team.save() # save the team
+            form.save_m2m() # add members to the team -> save the manytomany relationships
             return redirect('team_list')
     else: # if get request then give back empty form (ie page is loaded for first time)
         form = TeamForm()
-    return render(request, 'todo/team.html', {'form': form})
+    return render(request, 'todo/team.html', {'form': form, 'users': users})

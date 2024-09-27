@@ -337,11 +337,20 @@
 
             $.ajax({
                 type: 'POST',
-                url: '{% url "create_team" %}',
+                url: $(this).attr('action'),  // Dynamically get form's action URL
                 data: formData,
                 success: function(response) {
-                    // On success, redirect to the "My Teams" page
-                    window.location.href = "{% url 'user_teams' %}";
+                    if (response.success) {
+                        window.location.href = "{% url 'user_teams' %}";
+                        // On success, close the modal
+                        $('#createTeamModal').modal('hide');
+
+                        // Reload the page to reflect the changes
+                        location.reload();  // Ensures newly created team shows up
+                    } else {
+                        // Handle errors (e.g., form validation errors)
+                        alert('Error: ' + JSON.stringify(response.errors));
+                    }
                 },
                 error: function(response) {
                     alert('An error occurred. Please try again.');
@@ -349,8 +358,7 @@
             });
         });
     });
-</script>
-
+  </script>
 
 </body>
 </html>

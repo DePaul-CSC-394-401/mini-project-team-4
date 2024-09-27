@@ -201,17 +201,21 @@ def create_team(request):
         if form.is_valid():
             team = form.save(commit=False)
             team.save() # save the team
-            form.save_m2m() # add members to the team -> save the manytomany relationships
+
+            members = form.cleaned_data.get('members')
+            if members:
+                team.members.add(*members.exclude(id=request.user.id)) # add all selected members
+            # add the current user to the team
+            team.members.add(request.user)
+
             return JsonResponse({'success': True})  # Return success response for AJAX
-            #return redirect('user_teams')
         else: 
-            print(form.errors)
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else: # if get request then give back empty form (ie page is loaded for first time)
-        #form = TeamForm()
-        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+        form = TeamForm()
     return render(request, 'todo/index.html', {'form': form, 'users': users})
 
 @login_required
 def user_teams(request):
-    teams = Team.objects.filter(members=request.user) # teams that the current user is on
+    teams = request.user.teams.all()  # Fetch teams where the current user is a member
     return render(request, 'todo/user_teams.html', {'teams': teams})

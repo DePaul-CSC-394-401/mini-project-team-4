@@ -11,6 +11,3 @@ class TeamForm(forms.ModelForm):
     class Meta:
         model = Team
         fields = ['name', 'description', 'members']
-        widgets = {
-            'members': forms.CheckboxSelectMultiple, #select members in checkbox format
-        }

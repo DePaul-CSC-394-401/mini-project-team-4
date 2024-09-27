@@ -1,11 +1,12 @@
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.views.generic.edit import FormView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse_lazy
 from .forms import TeamForm, TodoForm
 from django.db.models import Q
-from .models import Todo
+from .models import Team, Todo
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -195,14 +196,22 @@ def change_password(request):
 @login_required
 def create_team(request):
     users = User.objects.all()
-    print(users)
     if request.method == 'POST':
         form = TeamForm(request.POST)
         if form.is_valid():
             team = form.save(commit=False)
             team.save() # save the team
             form.save_m2m() # add members to the team -> save the manytomany relationships
-            return redirect('team_list')
+            return JsonResponse({'success': True})  # Return success response for AJAX
+            #return redirect('user_teams')
+        else: 
+            print(form.errors)
     else: # if get request then give back empty form (ie page is loaded for first time)
-        form = TeamForm()
-    return render(request, 'todo/team.html', {'form': form, 'users': users})
+        #form = TeamForm()
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    return render(request, 'todo/index.html', {'form': form, 'users': users})
+
+@login_required
+def user_teams(request):
+    teams = Team.objects.filter(members=request.user) # teams that the current user is on
+    return render(request, 'todo/user_teams.html', {'teams': teams})

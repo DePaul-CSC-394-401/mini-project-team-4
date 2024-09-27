@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Teams</title>
+</head>
+<body>
+    <h1>My Teams</h1>
+
+    {% if teams %}
+        <ul>
+            {% for team in teams %}
+                <li>{{ team.name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You are not a part of any teams.</p>
+    {% endif %}
+</body>
+</html>
+

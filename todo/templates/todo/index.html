@@ -306,29 +306,7 @@
     </div>
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script>
-  $(document).ready(function(){
-      $('#create-team-form').on('submit', function(event) {
-          event.preventDefault();  // Prevent default form submission
-          
-          $.ajax({
-              type: 'POST',
-              url: $(this).attr('action'),  // Use the action URL from the form
-              data: $(this).serialize(),     // Serialize the form data
-              success: function(response) {
-                  // Handle success: You could show a success message or update the UI
-                  $('#createTeamModal').modal('hide'); // Hide the modal
-                  // Optionally, update your team list here if needed
-              },
-              error: function(xhr, status, error) {
-                  // Handle error
-                  console.error(xhr.responseText);
-              }
-          });
-      });
-  });
-  </script>
-  <!-- Script for redirecting create team modal to teams page -->
+  <!-- Script for create team modal -->
   <script>
     $(document).ready(function() {
         $('#create-team-form').on('submit', function(e) {

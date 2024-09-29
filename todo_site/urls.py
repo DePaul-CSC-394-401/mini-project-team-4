@@ -10,10 +10,12 @@ urlpatterns = [
     path('register/', RegisterPage.as_view(), name='register'),
 
     path('', views.index, name="todo"),
-     path('del/<str:item_id>/', views.remove, name='del'),
+    path('del/<str:item_id>/', views.remove, name='del'),
     path('edit/<str:item_id>', views.edit, name="edit"),
     path('admin/', admin.site.urls), 
     path('complete/<int:item_id>/', views.mark_complete, name='mark_complete'),
     path('change-password/', views.change_password, name='change_password'),
     path('update-email/', views.update_email, name='update_email'),
+    path('create-team/', views.create_team, name='create_team'),
+    path('teams/', views.user_teams, name='user_teams'),
 ]

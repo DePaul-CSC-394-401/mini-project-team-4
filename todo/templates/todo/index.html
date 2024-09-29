@@ -341,7 +341,8 @@
                 data: formData,
                 success: function(response) {
                     if (response.success) {
-                        window.location.href = "{% url 'user_teams' %}";
+                        $('#create-team-form')[0].reset(); // clear form
+
                         // On success, close the modal
                         $('#createTeamModal').modal('hide');
 

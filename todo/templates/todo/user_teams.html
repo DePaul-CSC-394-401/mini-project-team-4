@@ -16,7 +16,9 @@
       {% if teams %}
         <ul class="list-group">
           {% for team in teams %}
-            <li class="list-group-item">{{ team.name }}</li>
+            <li class="list-group-item">
+                <strong>{{ team.name }}</strong> : {{ team.description }}
+            </li>
           {% endfor %}
         </ul>
       {% else %}
@@ -26,6 +28,8 @@
       <div class="text-center">
         <a href="{% url 'todo' %}" class="btn btn-primary">Back to Main Page</a>
       </div>
+      <br>
+      <br>
     </div>
   </div>
 </body>

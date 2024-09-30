@@ -3,6 +3,8 @@ from django.urls import path
 from todo import views
 from todo.views import CustomLoginView, RegisterPage
 from django.contrib.auth.views import LogoutView
+from django.urls import path
+
 
 urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
@@ -18,4 +20,6 @@ urlpatterns = [
     path('update-email/', views.update_email, name='update_email'),
     path('create-team/', views.create_team, name='create_team'),
     path('teams/', views.user_teams, name='user_teams'),
+    path('teams/update/<int:team_id>/', views.update_team, name='update_team'),
+    path('teams/delete/<int:team_id>/', views.delete_team, name='delete_team'),
 ]

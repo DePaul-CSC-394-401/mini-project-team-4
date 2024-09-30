@@ -14,6 +14,8 @@ class Team(models.Model):
 # Todo model
 class Todo(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
+    assigned_users = models.ManyToManyField(User, related_name="assigned_tasks", blank=True)
 
     PRIORITY_CHOICES = [('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High'),]
 

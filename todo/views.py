@@ -13,6 +13,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
 from django import forms
 from django.contrib.auth.models import User
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 from django.core.mail import send_mail
 from django.conf import settings  # for accessing email config
@@ -69,8 +71,12 @@ def index(request):
     query = request.GET.get('q', None)
     sort_by = request.GET.get('sort_by', None)
 
-    # Filter todos by the logged-in user
-    item_list = Todo.objects.filter(user=request.user)
+     # Get the user's teams
+    user_teams = request.user.teams.all()
+
+    # Retrieve the user's To-Do items and team To-Do items
+    item_list = Todo.objects.filter(Q(user=request.user) | Q(team__in=user_teams) | Q(assigned_users=request.user))
+
 
     if query:
         # Filter items by title or description (details) if a search query exists
@@ -112,7 +118,7 @@ def index(request):
 
 @login_required
 def remove(request, item_id):
-    item = get_object_or_404(Todo, id=item_id, user=request.user)
+    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user)))
 
     if request.method == "POST":
         item.delete()
@@ -124,7 +130,8 @@ def remove(request, item_id):
 
 @login_required
 def edit(request, item_id):
-    item = get_object_or_404(Todo, id=item_id, user=request.user)
+    
+    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user)))
     if request.method == "POST":
         form = TodoForm(request.POST, instance=item)
         if form.is_valid():
@@ -143,7 +150,7 @@ def edit(request, item_id):
 
 @login_required
 def mark_complete(request, item_id):
-    item = get_object_or_404(Todo, id=item_id, user=request.user)
+    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user)))
     item.completed = True
     item.save()
     return redirect('todo')
@@ -219,3 +226,41 @@ def create_team(request):
 def user_teams(request):
     teams = request.user.teams.all()  # Fetch teams where the current user is a member
     return render(request, 'todo/user_teams.html', {'teams': teams})
+
+
+# Update Team view
+@login_required
+def update_team(request, team_id):
+    team = get_object_or_404(Team, id=team_id)
+    
+    if request.user not in team.members.all():
+        messages.error(request, "You are not allowed to update this team.")
+        return redirect('user_teams')
+
+    if request.method == 'POST':
+        form = TeamForm(request.POST, instance=team)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Team updated successfully!")
+            return redirect('user_teams')
+    else:
+        form = TeamForm(instance=team)
+
+    return render(request, 'todo/update_team.html', {'form': form, 'team': team})
+
+
+# Delete Team view with confirmation
+@login_required
+def delete_team(request, team_id):
+    team = get_object_or_404(Team, id=team_id)
+
+    if request.user not in team.members.all():
+        messages.error(request, "You are not allowed to delete this team.")
+        return redirect('user_teams')
+
+    if request.method == 'POST':
+        team.delete()
+        messages.success(request, "Team deleted successfully!")
+        return redirect('user_teams')
+
+    return render(request, 'todo/delete_team_confirm.html', {'team': team})

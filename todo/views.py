@@ -12,6 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
 from django import forms
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from django.core.mail import send_mail
 from django.conf import settings  # for accessing email config
@@ -66,9 +67,22 @@ def index(request):
     # Get the search query and sort option from the request
     query = request.GET.get('q', None)
     sort_by = request.GET.get('sort_by', None)
+    category_filter = request.GET.get('category', None)
 
     # Filter todos by the logged-in user
-    item_list = Todo.objects.filter(user=request.user)
+    item_list = Todo.objects.filter(user=request.user, archived=False)
+
+    if category_filter:
+        item_list = item_list.filter(category=category_filter)
+
+    now = timezone.now()
+    for item in item_list:
+        if item.reminder_time and not item.reminder_sent:
+            reminder_due_time = item.due_date - item.reminder_time
+            if now >= reminder_due_time:
+                item.reminder_sent = True
+                item.save()
+                messages.info(request, f'Reminder: Task "{item.title}" is due soon!')
 
     if query:
         # Filter items by title or description (details) if a search query exists
@@ -86,6 +100,7 @@ def index(request):
         # Default sorting by creation date descending
         item_list = item_list.order_by('-date')
 
+    form = TodoForm(request.POST or None)
     if request.method == "POST":
         form = TodoForm(request.POST)
         if form.is_valid():
@@ -100,8 +115,25 @@ def index(request):
         "forms": form,
         "list": item_list,
         "title": "TODO LIST",
+        "Current_category" : category_filter
     }
     return render(request, 'todo/index.html', page)
+
+def archive_task(request, task_id):
+    task = get_object_or_404(Todo, id=task_id, user=request.user)
+    task.archived = True
+    task.save()
+    messages.success(request, f'Task "{task.title}" archived successfully!')
+    return redirect('todo')
+
+def view_archive(request):
+    archived_task = Todo.objects.filter(user=request.user, archived=True).order_by('-date')
+
+    page = {
+        "list": archived_task,
+        "title": "archived TODO Items",
+    }
+    return render(request,'todo/archive.html', page )
 
 
 @login_required

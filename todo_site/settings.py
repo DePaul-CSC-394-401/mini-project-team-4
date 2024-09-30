@@ -122,6 +122,7 @@ SERVER_EMAIL = 'noreply@gmail.com'
 
 
 
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 

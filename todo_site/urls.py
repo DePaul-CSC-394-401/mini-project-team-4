@@ -16,4 +16,6 @@ urlpatterns = [
     path('complete/<int:item_id>/', views.mark_complete, name='mark_complete'),
     path('change-password/', views.change_password, name='change_password'),
     path('update-email/', views.update_email, name='update_email'),
+    path('archive/<int:task_id>/', views.archive_task, name='archive_task'),
+    path('archive/', views.view_archive, name='view_archive'),
 ]

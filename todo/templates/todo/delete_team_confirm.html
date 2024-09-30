@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Team</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body class="container-fluid">
+    <h1 class="text-center">Delete Team</h1>
+    <p>Are you sure you want to delete the team <strong>{{ team.name }}</strong>?</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete Team</button>
+        <a href="{% url 'user_teams' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</body>
+</html>

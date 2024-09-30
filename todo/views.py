@@ -1,22 +1,26 @@
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.views.generic.edit import FormView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse_lazy
-from .forms import TodoForm
+from .forms import TeamForm, TodoForm
 from django.db.models import Q
-from .models import Todo
+from .models import Team, Todo
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
 from django import forms
 from django.contrib.auth.models import User
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 from django.core.mail import send_mail
 from django.conf import settings  # for accessing email config
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.contrib.auth.models import User
 
 
 class CustomLoginView(LoginView):
@@ -96,10 +100,14 @@ def index(request):
     else:
         form = TodoForm()
 
+    # get all the users for the create team modal (excluding the current user)
+    users = User.objects.exclude(id=request.user.id) 
+
     page = {
         "forms": form,
         "list": item_list,
         "title": "TODO LIST",
+        "users": users,
     }
     return render(request, 'todo/index.html', page)
 
@@ -186,3 +194,68 @@ def change_password(request):
         else:
             messages.error(request, "Old password is incorrect.")
             return redirect('profile')
+
+@login_required
+def create_team(request):
+    users = User.objects.all()
+    if request.method == 'POST':
+        form = TeamForm(request.POST)
+        if form.is_valid():
+            team = form.save(commit=False)
+            team.save() # save the team
+
+            members = form.cleaned_data.get('members')
+            if members:
+                team.members.add(*members.exclude(id=request.user.id)) # add all selected members
+            # add the current user to the team
+            team.members.add(request.user)
+
+            return JsonResponse({'success': True})  # Return success response for AJAX
+        else: 
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    else: # if get request then give back empty form (ie page is loaded for first time)
+        form = TeamForm()
+    return render(request, 'todo/index.html', {'form': form, 'users': users})
+
+@login_required
+def user_teams(request):
+    teams = request.user.teams.all()  # Fetch teams where the current user is a member
+    return render(request, 'todo/user_teams.html', {'teams': teams})
+
+
+# Update Team view
+@login_required
+def update_team(request, team_id):
+    team = get_object_or_404(Team, id=team_id)
+    
+    if request.user not in team.members.all():
+        messages.error(request, "You are not allowed to update this team.")
+        return redirect('user_teams')
+
+    if request.method == 'POST':
+        form = TeamForm(request.POST, instance=team)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Team updated successfully!")
+            return redirect('user_teams')
+    else:
+        form = TeamForm(instance=team)
+
+    return render(request, 'todo/update_team.html', {'form': form, 'team': team})
+
+
+# Delete Team view with confirmation
+@login_required
+def delete_team(request, team_id):
+    team = get_object_or_404(Team, id=team_id)
+
+    if request.user not in team.members.all():
+        messages.error(request, "You are not allowed to delete this team.")
+        return redirect('user_teams')
+
+    if request.method == 'POST':
+        team.delete()
+        messages.success(request, "Team deleted successfully!")
+        return redirect('user_teams')
+
+    return render(request, 'todo/delete_team_confirm.html', {'team': team})

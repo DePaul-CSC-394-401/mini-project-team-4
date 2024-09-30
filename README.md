@@ -14,4 +14,11 @@ python manage.py runserver
 Navigate to the following website: http://127.0.0.1:8000/login/
 
 # To run docker container:
-tbd
+
+Start up docker desktop
+
+cd to the root directory of the project in the terminal
+
+run the following command to start the application in the docker container: docker-compose up --build
+
+Go to the login page: http://127.0.0.1:8000/login/

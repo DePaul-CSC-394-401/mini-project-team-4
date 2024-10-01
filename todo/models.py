@@ -16,7 +16,6 @@ class Todo(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
     assigned_users = models.ManyToManyField(User, related_name="assigned_tasks", blank=True)
-
     PRIORITY_CHOICES = [('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High'),]
 
     title = models.CharField(max_length=100)
@@ -24,7 +23,7 @@ class Todo(models.Model):
     date = models.DateTimeField(default=timezone.now)
     completed = models.BooleanField(default=False)
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='Medium')
-    #team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True) # opional field
+
 
     def __str__(self):
         return self.title

@@ -1,0 +1,10 @@
+#!/bin/sh
+'''exec' "/Users/fritznastor/Downloads/DEPAUL 4TH YEAR/FALL 24/CSC 394/WEEK 1/mini-project-team-4/myenv/bin/python3.11" "$0" "$@"
+' '''
+# -*- coding: utf-8 -*-
+import re
+import sys
+from websocket._wsdump import main
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(main())

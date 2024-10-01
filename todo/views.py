@@ -15,7 +15,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-
+from django.db.models import Q
 from django.core.mail import send_mail
 from django.conf import settings  # for accessing email config
 from django.template.loader import render_to_string
@@ -124,19 +124,29 @@ def index(request):
 @login_required
 def remove(request, item_id):
     # Check if the user is the creator, assigned user, or a team member
-    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user)))
+    items = Todo.objects.filter(
+        Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user))
+    )
 
     if request.method == "POST":
-        item.delete()
+        items.delete()
         messages.info(request, "Item removed!")
         return redirect('todo')
     
-    return render(request, 'todo/confirm_delete.html', {'item': item})
+    return render(request, 'todo/confirm_delete.html', {'item': items})
+
+
 
 @login_required
 def edit(request, item_id):
-    # Check if the user is the creator, assigned user, or a team member
-    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user)))
+    # First, filter the Todo items based on the provided conditions
+    item = Todo.objects.filter(
+        Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user))
+    ).first()  # Use first() to ensure it only returns one item
+
+    # If no item is found, raise a 404 error
+    if not item:
+        raise Http404("Todo item not found")
 
     if request.method == "POST":
         form = TodoForm(request.POST, instance=item)
@@ -156,10 +166,19 @@ def edit(request, item_id):
 
 @login_required
 def mark_complete(request, item_id):
-    # Check if the user is the creator, assigned user, or a team member
-    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user)))
-    item.completed = True
-    item.save()
+    # Fetch the specific Todo item for the given item_id and user constraints
+    item = Todo.objects.filter(
+        Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user))
+    ).first()
+
+    if item:
+        # Mark the item as complete and save it
+        item.completed = True
+        item.save()
+        messages.success(request, "Item marked as complete.")
+    else:
+        messages.error(request, "Todo item not found or you don't have permission to mark it as complete.")
+
     return redirect('todo')
 
 

@@ -231,6 +231,15 @@
         <hr />
         {{ i.details }}
         <br />
+        <strong>Team:</strong> 
+        {% if i.team %}
+            {{ i.team.name }}
+        {% else %}
+            No Team
+        {% endif %}
+        <br />
+        <strong>Assigned Users:</strong> {% for user in i.assigned_users.all %}{{ user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        <br />
         <br />
 
         <!-- Edit Button -->

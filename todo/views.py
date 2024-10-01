@@ -71,12 +71,11 @@ def index(request):
     query = request.GET.get('q', None)
     sort_by = request.GET.get('sort_by', None)
 
-     # Get the user's teams
+    # Get the user's teams
     user_teams = request.user.teams.all()
 
     # Retrieve the user's To-Do items and team To-Do items
     item_list = Todo.objects.filter(Q(user=request.user) | Q(team__in=user_teams) | Q(assigned_users=request.user))
-
 
     if query:
         # Filter items by title or description (details) if a search query exists
@@ -98,14 +97,19 @@ def index(request):
         form = TodoForm(request.POST)
         if form.is_valid():
             todo_item = form.save(commit=False)
-            todo_item.user = request.user
+            todo_item.user = request.user  # Assign the creator of the to-do
+
             todo_item.save()
+
+            # Save assigned users
+            form.save_m2m()  # This saves the ManyToMany relationships (e.g., assigned_users)
+
             return redirect('todo')
     else:
         form = TodoForm()
 
-    # get all the users for the create team modal (excluding the current user)
-    users = User.objects.exclude(id=request.user.id) 
+    # Get all users for the create team modal (excluding the current user)
+    users = User.objects.exclude(id=request.user.id)
 
     page = {
         "forms": form,

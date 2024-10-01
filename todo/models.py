@@ -29,4 +29,13 @@ class Todo(models.Model):
     def __str__(self):
         return self.title
 
+class TodoTimer(models.Model):
+    todo = models.ForeignKey(Todo, on_delete=models.CASCADE, related_name='timers')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
     
+    def total_time(self):
+        if self.start_time and self.end_time:
+            return (self.end_time - self.start_time).total_seconds() / 60  # Total time in minutes
+        return 0

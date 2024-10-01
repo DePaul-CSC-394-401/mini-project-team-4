@@ -71,12 +71,13 @@ def index(request):
     query = request.GET.get('q', None)
     sort_by = request.GET.get('sort_by', None)
 
-     # Get the user's teams
+    # Get the user's teams
     user_teams = request.user.teams.all()
 
-    # Retrieve the user's To-Do items and team To-Do items
-    item_list = Todo.objects.filter(Q(user=request.user) | Q(team__in=user_teams) | Q(assigned_users=request.user))
-
+    # Retrieve the user's To-Do items and team To-Do items, ensuring no duplicates
+    item_list = Todo.objects.filter(
+        Q(user=request.user) | Q(team__in=user_teams) | Q(assigned_users=request.user)
+    ).distinct()
 
     if query:
         # Filter items by title or description (details) if a search query exists
@@ -95,17 +96,21 @@ def index(request):
         item_list = item_list.order_by('-date')
 
     if request.method == "POST":
-        form = TodoForm(request.POST)
+        # Pass the current user to the TodoForm for dynamic team queryset
+        form = TodoForm(request.POST, user=request.user)  
         if form.is_valid():
             todo_item = form.save(commit=False)
-            todo_item.user = request.user
+            todo_item.user = request.user  # Assign the creator of the to-do
             todo_item.save()
+            form.save_m2m()  # Save the ManyToMany relationships
+
             return redirect('todo')
     else:
-        form = TodoForm()
+        # Pass the current user to the TodoForm for dynamic team queryset
+        form = TodoForm(user=request.user)  
 
-    # get all the users for the create team modal (excluding the current user)
-    users = User.objects.exclude(id=request.user.id) 
+    # Get all users for the create team modal (excluding the current user)
+    users = User.objects.exclude(id=request.user.id)
 
     page = {
         "forms": form,
@@ -118,7 +123,8 @@ def index(request):
 
 @login_required
 def remove(request, item_id):
-    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user)))
+    # Check if the user is the creator, assigned user, or a team member
+    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user)))
 
     if request.method == "POST":
         item.delete()
@@ -127,11 +133,11 @@ def remove(request, item_id):
     
     return render(request, 'todo/confirm_delete.html', {'item': item})
 
-
 @login_required
 def edit(request, item_id):
-    
-    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user)))
+    # Check if the user is the creator, assigned user, or a team member
+    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user)))
+
     if request.method == "POST":
         form = TodoForm(request.POST, instance=item)
         if form.is_valid():
@@ -150,7 +156,8 @@ def edit(request, item_id):
 
 @login_required
 def mark_complete(request, item_id):
-    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user)))
+    # Check if the user is the creator, assigned user, or a team member
+    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user)))
     item.completed = True
     item.save()
     return redirect('todo')

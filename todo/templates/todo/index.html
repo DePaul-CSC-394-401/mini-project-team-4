@@ -241,6 +241,129 @@
         <strong>Assigned Users:</strong> {% for user in i.assigned_users.all %}{{ user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}
         <br />
         <br />
+        <!-- Timer Section -->
+        <div id="timer-{{ i.id }}" style="display:none;">
+        <strong>Time Elapsed for {{ item.title }}:</strong>
+        <span id="time-elapsed-{{ i.id }}">00:00:00</span>
+  </div>
+
+    <!-- Start, Stop, and View Log Buttons -->
+    <!-- Show timer buttons only if the task is not completed -->
+{% if not i.completed %}
+<button onclick="startTimer('{{ i.id }}')" class="btn btn-success">Start Timer</button>
+<button onclick="stopTimer('{{ i.id }}')" class="btn btn-warning">Stop Timer</button>
+{% else %}
+<p>Task completed, timer stopped.</p>
+{% endif %}
+
+        <br />
+        <br />
+
+        <script>
+          // Track timers, start times, and elapsed times for each task individually
+          var timerIntervals = {};  // Track each task's interval ID
+          var startTimes = {};      // Track the start time for each task
+          var elapsedTimes = {};    // Track elapsed time for each task
+      
+          // Restore timers from localStorage on page load
+          window.onload = function() {
+              // Get all saved timers from localStorage
+              var savedTimers = JSON.parse(localStorage.getItem('timers')) || {};
+      
+              // Loop through each task and restore its state if a timer was running
+              for (var itemId in savedTimers) {
+                  if (savedTimers.hasOwnProperty(itemId)) {
+                      elapsedTimes[itemId] = savedTimers[itemId].elapsedTime;
+                      startTimes[itemId] = new Date().getTime() - elapsedTimes[itemId];
+      
+                      // Show the timer for this task
+                      document.getElementById('timer-' + itemId).style.display = 'block';
+      
+                      // Start the timer again
+                      startTimer(itemId, true);  // Passing true to indicate it's a restoration
+                  }
+              }
+          };
+      
+          function startTimer(itemId, isRestoring = false) {
+              // If we're not restoring, reset the start time
+              if (!isRestoring) {
+                  startTimes[itemId] = new Date().getTime() - (elapsedTimes[itemId] || 0);
+              }
+      
+              // Show the timer for this task
+              document.getElementById('timer-' + itemId).style.display = 'block';
+      
+              // Start the timer and update the display every second
+              timerIntervals[itemId] = setInterval(function() {
+                  var now = new Date().getTime();
+                  var elapsedTime = now - startTimes[itemId];
+      
+                  var hours = Math.floor((elapsedTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                  var minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+                  var seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+      
+                  // Update the display for the current task's timer
+                  document.getElementById('time-elapsed-' + itemId).textContent = 
+                      (hours < 10 ? '0' : '') + hours + ':' +
+                      (minutes < 10 ? '0' : '') + minutes + ':' +
+                      (seconds < 10 ? '0' : '') + seconds;
+      
+                  // Save the timer's state to localStorage
+                  saveTimerState(itemId, elapsedTime);
+              }, 1000);
+          }
+      
+          function stopTimer(itemId) {
+              // If the timer is running for this task, stop it
+              if (timerIntervals[itemId]) {
+                  clearInterval(timerIntervals[itemId]);  // Stop the timer
+                  timerIntervals[itemId] = null;  // Reset the interval ID
+      
+                  // Calculate and store the total elapsed time for this task
+                  var now = new Date().getTime();
+                  elapsedTimes[itemId] = now - startTimes[itemId];  // Store the paused time
+              }
+      
+              // Save the timer's final state to localStorage
+              saveTimerState(itemId, elapsedTimes[itemId]);
+          }
+      
+          function resetTimer(itemId) {
+              // Stop the timer if it's running
+              stopTimer(itemId);
+      
+              // Reset elapsed time
+              elapsedTimes[itemId] = 0;
+      
+              // Update the display to show 00:00:00
+              document.getElementById('time-elapsed-' + itemId).textContent = '00:00:00';
+      
+              // Remove the timer state from localStorage
+              removeTimerState(itemId);
+          }
+      
+          // Save timer state to localStorage
+          function saveTimerState(itemId, elapsedTime) {
+              var savedTimers = JSON.parse(localStorage.getItem('timers')) || {};
+              savedTimers[itemId] = { elapsedTime: elapsedTime };
+              localStorage.setItem('timers', JSON.stringify(savedTimers));
+          }
+      
+          // Remove timer state from localStorage
+          function removeTimerState(itemId) {
+              var savedTimers = JSON.parse(localStorage.getItem('timers')) || {};
+              delete savedTimers[itemId];
+              localStorage.setItem('timers', JSON.stringify(savedTimers));
+          }
+      
+          function viewLog(itemId) {
+              // Placeholder for viewing time logs (implement this according to your needs)
+              alert('Viewing log for task ' + itemId);
+          }
+      </script>
+      
+      
 
         <!-- Edit Button -->
         <form action="/edit/{{ i.id }}" method="GET" style="float: left; padding-right: 10px;">
@@ -349,4 +472,3 @@
   </script>
 
 </body>
-</html>

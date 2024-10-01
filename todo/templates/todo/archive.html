@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>{{title}}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% load static %}
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <!--style-->
+  <style>
+    .card {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5),
+        0 6px 20px 0 rgba(0, 0, 0, 0.39);
+      background: rgb(148, 145, 187);
+      margin-bottom: 5%;
+      border-radius: 25px;
+      padding: 2%;
+      overflow: auto;
+      resize: both;
+      text-overflow: ellipsis;
+    }
+
+    .card:hover {
+      background: lightblue;
+    }
+
+    .submit_form {
+      text-align: center;
+      padding: 3%;
+      background: rgb(138, 146, 226);
+      border-radius: 25px;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.4),
+        0 6px 20px 0 rgba(0, 0, 0, 0.36);
+    }
+
+    /* Completed task styling */
+    .completed {
+      background-color: lightgreen;
+      text-decoration: line-through;
+    }
+
+    .navbar-right {
+      margin-right: 20px;
+    }
+
+    h1 {
+      font-weight: bold;
+    }
+
+    hr {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+
+<body class="container-fluid">
+
+  <!-- Add Bootstrap JS and jQuery for modal -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <!-- Title -->
+  <center class="row">
+    <h1><i>__ARCHIVED TODO LIST__</i></h1>
+    <hr />
+  </center>
+
+  <!-- Archived Tasks Section -->
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2">
+      <!-- Check if there are any archived tasks -->
+      {% if list %}
+      {% for i in list %}
+      <div class="card completed">
+        <center><b>{{ i.title }}</b></center>
+        <hr />
+        <strong>Priority:</strong> {{ i.priority }}
+        <hr />
+        <p>{{ i.date }}</p>
+        <p>{{ i.details }}</p>
+
+        <div style="clear: both;"></div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p>No archived tasks found.</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+
+</html>

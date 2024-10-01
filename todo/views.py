@@ -74,8 +74,10 @@ def index(request):
     # Get the user's teams
     user_teams = request.user.teams.all()
 
-    # Retrieve the user's To-Do items and team To-Do items
-    item_list = Todo.objects.filter(Q(user=request.user) | Q(team__in=user_teams) | Q(assigned_users=request.user))
+    # Retrieve the user's To-Do items and team To-Do items, ensuring no duplicates
+    item_list = Todo.objects.filter(
+        Q(user=request.user) | Q(team__in=user_teams) | Q(assigned_users=request.user)
+    ).distinct()
 
     if query:
         # Filter items by title or description (details) if a search query exists
@@ -98,11 +100,8 @@ def index(request):
         if form.is_valid():
             todo_item = form.save(commit=False)
             todo_item.user = request.user  # Assign the creator of the to-do
-
             todo_item.save()
-
-            # Save assigned users
-            form.save_m2m()  # This saves the ManyToMany relationships (e.g., assigned_users)
+            form.save_m2m()  # Save the ManyToMany relationships
 
             return redirect('todo')
     else:

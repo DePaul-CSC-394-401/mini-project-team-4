@@ -187,6 +187,7 @@ def mark_complete(request, item_id):
     item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user)))
     item.completed = True
     item.save()
+    stop_timer(request, item_id)
     return redirect('todo')
 
 

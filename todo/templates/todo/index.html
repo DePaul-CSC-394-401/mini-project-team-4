@@ -248,9 +248,13 @@
   </div>
 
     <!-- Start, Stop, and View Log Buttons -->
-    <button onclick="startTimer('{{ i.id }}')" class="btn btn-success">Start Timer</button>
-    <button onclick="stopTimer('{{ i.id }}')" class="btn btn-warning">Stop Timer</button>
-    <button onclick="resetTimer('{{ i.id }}')" class="btn btn-danger">Reset Timer</button>
+    <!-- Show timer buttons only if the task is not completed -->
+{% if not i.completed %}
+<button onclick="startTimer('{{ i.id }}')" class="btn btn-success">Start Timer</button>
+<button onclick="stopTimer('{{ i.id }}')" class="btn btn-warning">Stop Timer</button>
+{% else %}
+<p>Task completed, timer stopped.</p>
+{% endif %}
 
         <br />
         <br />

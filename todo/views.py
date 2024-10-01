@@ -118,7 +118,8 @@ def index(request):
 
 @login_required
 def remove(request, item_id):
-    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user)))
+    # Check if the user is the creator, assigned user, or a team member
+    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user)))
 
     if request.method == "POST":
         item.delete()
@@ -127,11 +128,11 @@ def remove(request, item_id):
     
     return render(request, 'todo/confirm_delete.html', {'item': item})
 
-
 @login_required
 def edit(request, item_id):
-    
-    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user)))
+    # Check if the user is the creator, assigned user, or a team member
+    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user)))
+
     if request.method == "POST":
         form = TodoForm(request.POST, instance=item)
         if form.is_valid():
@@ -150,7 +151,8 @@ def edit(request, item_id):
 
 @login_required
 def mark_complete(request, item_id):
-    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user)))
+    # Check if the user is the creator, assigned user, or a team member
+    item = get_object_or_404(Todo, Q(id=item_id) & (Q(user=request.user) | Q(assigned_users=request.user) | Q(team__members=request.user)))
     item.completed = True
     item.save()
     return redirect('todo')

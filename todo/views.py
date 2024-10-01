@@ -96,7 +96,8 @@ def index(request):
         item_list = item_list.order_by('-date')
 
     if request.method == "POST":
-        form = TodoForm(request.POST)
+        # Pass the current user to the TodoForm for dynamic team queryset
+        form = TodoForm(request.POST, user=request.user)  
         if form.is_valid():
             todo_item = form.save(commit=False)
             todo_item.user = request.user  # Assign the creator of the to-do
@@ -105,7 +106,8 @@ def index(request):
 
             return redirect('todo')
     else:
-        form = TodoForm()
+        # Pass the current user to the TodoForm for dynamic team queryset
+        form = TodoForm(user=request.user)  
 
     # Get all users for the create team modal (excluding the current user)
     users = User.objects.exclude(id=request.user.id)

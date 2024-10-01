@@ -18,13 +18,10 @@ urlpatterns = [
     path('complete/<int:item_id>/', views.mark_complete, name='mark_complete'),
     path('change-password/', views.change_password, name='change_password'),
     path('update-email/', views.update_email, name='update_email'),
-<<<<<<< HEAD
     path('archive/<int:task_id>/', views.archive_task, name='archive_task'),
     path('archive/', views.view_archive, name='view_archive'),
-=======
     path('create-team/', views.create_team, name='create_team'),
     path('teams/', views.user_teams, name='user_teams'),
     path('teams/update/<int:team_id>/', views.update_team, name='update_team'),
     path('teams/delete/<int:team_id>/', views.delete_team, name='delete_team'),
->>>>>>> e29c6a52f58f89f7f853a9fde1b0ca5b1e681b21
 ]

@@ -10,10 +10,7 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
     path('register/', RegisterPage.as_view(), name='register'),
-    path('', views.index, name='todo'),
-    path('start_timer/<int:item_id>/', views.start_timer, name='start_timer'),
-    path('stop_timer/<int:item_id>/', views.stop_timer, name='stop_timer'),
-    path('timer_log/<int:item_id>/', views.timer_log, name='timer_log'),
+
     path('', views.index, name="todo"),
     path('del/<str:item_id>/', views.remove, name='del'),
     path('edit/<str:item_id>', views.edit, name="edit"),

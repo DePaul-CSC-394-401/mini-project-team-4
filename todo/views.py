@@ -21,6 +21,9 @@ from django.conf import settings  # for accessing email config
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.contrib.auth.models import User
+from django.utils import timezone
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Todo, TodoTimer
 
 
 class CustomLoginView(LoginView):
@@ -64,6 +67,30 @@ class RegisterPage(FormView):
 
         return super(RegisterPage, self).form_valid(form)
 
+@login_required
+def start_timer(request, item_id):
+    todo = get_object_or_404(Todo, id=item_id)
+    # Start a new timer for the user if there is no ongoing timer
+    if not TodoTimer.objects.filter(todo=todo, user=request.user, end_time__isnull=True).exists():
+        TodoTimer.objects.create(todo=todo, user=request.user, start_time=timezone.now())
+    return redirect('todo')
+
+@login_required
+def stop_timer(request, item_id):
+    todo = get_object_or_404(Todo, id=item_id)
+    # Stop the most recent timer if it is running
+    timer = TodoTimer.objects.filter(todo=todo, user=request.user, end_time__isnull=True).first()
+    if timer:
+        timer.end_time = timezone.now()
+        timer.save()
+    return redirect('todo')
+
+@login_required
+def timer_log(request, item_id):
+    todo = get_object_or_404(Todo, id=item_id)
+    timers = TodoTimer.objects.filter(todo=todo, user=request.user)
+    total_time_spent = sum(timer.total_time() for timer in timers)
+    return render(request, 'todo/timer_log.html', {'timers': timers, 'total_time_spent': total_time_spent, 'todo': todo})
 
 @login_required
 def index(request):
